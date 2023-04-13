@@ -13,6 +13,7 @@
 
 	// variables
 	let active = false;
+	let autosaveMins = 15;
 	let loading = false;
 	let timerInterval: any;
 	let autosaveInterval: any;
@@ -29,42 +30,57 @@
 			$task.title = values.title;
 		}
 	});
+
+	const updateTime = async () => {
+		loading = true;
+
+		const { data } = await supabase
+			.from('tasks')
+			.upsert({
+				id: $task.id,
+				title: $task.title,
+				timeInSeconds: $task.timeInSeconds
+			})
+			.select()
+			.single();
+
+		if ($task.id == undefined) $task.id = data!['id'];
+
+		//update total
+		globalData.value.totalTimeSpent += $task.timeInSeconds;
+		await supabase.from('globals').update(globalData, {}).eq('id', globalData.id);
+
+		loading = false;
+	};
+
 	const startTimer = async () => {
 		if ($task.title != '') {
 			active = true;
 			timerInterval = setInterval(() => $task.timeInSeconds++, 1000);
+			autosaveInterval = setInterval(() => updateTime(), 1000 * 60 * 10);
 		}
 	};
 	const stopTimer = async () => {
 		clearInterval(timerInterval);
+		clearInterval(autosaveInterval);
 		active = false;
 	};
 
 	const split = async () => {
 		if ($task.title != '') {
-			loading = true;
 			stopTimer();
-			if ($task.timeInSeconds != 0) {
-				// append to tasks
-				await supabase.from('tasks').insert({
-					title: $task.title,
-					timeInSeconds: $task.timeInSeconds
-				});
-				//update total
-				globalData.value.totalTimeSpent += $task.timeInSeconds;
-				await supabase.from('globals').update(globalData, {}).eq('id', globalData.id);
-			}
-
-			loading = false;
-
+			if ($task.timeInSeconds != 0) updateTime();
 			$task.title = '';
-			reset();
 			$task.timeInSeconds = 0;
+			reset();
 		}
 	};
 
 	onMount(() => {
-		return () => stopTimer();
+		return () => {
+			stopTimer();
+			updateTime();
+		};
 	});
 </script>
 
