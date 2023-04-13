@@ -1,19 +1,21 @@
 <script lang="ts">
 	import { createForm } from 'felte';
-	import { formatTime } from '../lib/utils';
+	import { formatTime } from '../../lib/utils';
 	import { supabase } from '$lib/supabase';
+	import type { GlobalData } from '$lib/types';
+	import { task } from '$lib/stores';
+	import { onMount } from 'svelte';
+	import classnames from 'classnames';
 
 	// load
-	import type { GlobalData } from '$lib/types';
-
 	/** @type {import('./$types').PageData} */
 	export let data;
 
 	// variables
 	let active = false;
-	let timeInSeconds: number = 0;
+	let loading = false;
 	let timerInterval: any;
-	let title: string = '';
+	let autosaveInterval: any;
 	let globalData: GlobalData = data.globalData;
 
 	// functions
@@ -24,14 +26,13 @@
 		data: formData
 	} = createForm({
 		onSubmit: (values) => {
-			title = values.title;
+			$task.title = values.title;
 		}
 	});
 	const startTimer = async () => {
-		if ($formData.title != '') {
+		if ($task.title != '') {
 			active = true;
-			if (title == '') handleSubmit();
-			timerInterval = setInterval(() => timeInSeconds++, 1000);
+			timerInterval = setInterval(() => $task.timeInSeconds++, 1000);
 		}
 	};
 	const stopTimer = async () => {
@@ -40,28 +41,35 @@
 	};
 
 	const split = async () => {
-		if (title != '') {
+		if ($task.title != '') {
+			loading = true;
 			stopTimer();
-			if (timeInSeconds != 0) {
+			if ($task.timeInSeconds != 0) {
 				// append to tasks
 				await supabase.from('tasks').insert({
-					title: $formData.title,
-					timeInSeconds
+					title: $task.title,
+					timeInSeconds: $task.timeInSeconds
 				});
 				//update total
-				globalData.value.totalTimeSpent += timeInSeconds;
-				await supabase.from('globals').update(globalData).eq('id', globalData.id);
+				globalData.value.totalTimeSpent += $task.timeInSeconds;
+				await supabase.from('globals').update(globalData, {}).eq('id', globalData.id);
 			}
 
-			title = '';
+			loading = false;
+
+			$task.title = '';
 			reset();
-			timeInSeconds = 0;
+			$task.timeInSeconds = 0;
 		}
 	};
+
+	onMount(() => {
+		return () => stopTimer();
+	});
 </script>
 
 <main class="h-screen flex flex-col items-center justify-center">
-	{#if title == ''}
+	{#if $task.title == ''}
 		<form use:form class="w-1/2 text-center">
 			<input
 				type="text"
@@ -71,9 +79,15 @@
 			/>
 		</form>
 	{:else}
-		<h3 class="text-2xl underline w-1/2 text-center">{title}</h3>
+		<h3 class="text-2xl underline w-1/2 text-center">{$task.title}</h3>
 	{/if}
-	<div class="text-6xl font-bold pt-6 pb-16">{formatTime(timeInSeconds)}</div>
+	<div
+		class={classnames('text-6xl font-bold pt-6 pb-16', {
+			'gradient-text': loading
+		})}
+	>
+		{formatTime($task.timeInSeconds)}
+	</div>
 	{#if active}
 		<button class="btn btn-primary px-12 mb-6" on:click={stopTimer}>pause</button>
 	{:else}

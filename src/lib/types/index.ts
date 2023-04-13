@@ -1,6 +1,6 @@
 export type Task = {
-	id: number;
-	createdAt: Date;
+	id?: number;
+	createdAt?: Date;
 	title: string;
 	timeInSeconds: number;
 };
