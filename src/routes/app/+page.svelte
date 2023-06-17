@@ -2,27 +2,22 @@
 	import { createForm } from 'felte';
 	import { formatTime } from '../../lib/utils';
 	import { supabase } from '$lib/supabase';
-	import type { GlobalData } from '$lib/types';
 	import { task } from '$lib/stores';
 	import { onMount } from 'svelte';
 	import classnames from 'classnames';
 
-	// load
-	/** @type {import('./$types').PageData} */
-	export let data;
+	// loading data
+	// /** @type {import('./$types').PageData} */ export let data;
 
 	// variables
 	let active = false;
-	let autosaveMins = 15;
 	let loading = false;
 	let timerInterval: any;
-	let autosaveInterval: any;
-	let globalData: GlobalData = data.globalData;
+	// let globalData = data.globalData;
 
 	// functions
 	const {
 		form,
-		handleSubmit,
 		reset,
 		data: formData
 	} = createForm({
@@ -31,41 +26,40 @@
 		}
 	});
 
+	// function to insert into db and total time spent
 	const updateTime = async () => {
 		loading = true;
 
-		const { data } = await supabase
-			.from('tasks')
-			.upsert({
-				id: $task.id,
-				title: $task.title,
-				timeInSeconds: $task.timeInSeconds
-			})
-			.select()
-			.single();
+		await supabase.from('tasks').insert({
+			title: $task.title,
+			timeInSeconds: $task.timeInSeconds
+		});
 
-		if ($task.id == undefined) $task.id = data!['id'];
+		// if ($task.id == undefined) $task.id = data!['id'];
 
 		//update total
-		globalData.value.totalTimeSpent += $task.timeInSeconds;
-		await supabase.from('globals').update(globalData, {}).eq('id', globalData.id);
+		// globalData.value.totalTimeSpent += $task.timeInSeconds;
+		// await supabase.from('globals').update(globalData, {}).eq('id', 4);
 
 		loading = false;
 	};
 
+	// start time
 	const startTimer = async () => {
 		if ($task.title != '') {
 			active = true;
 			timerInterval = setInterval(() => $task.timeInSeconds++, 1000);
-			autosaveInterval = setInterval(() => updateTime(), 1000 * 60 * 10);
+			// autosaveInterval = setInterval(() => updateTime(), 1000 * 60 * 10);
 		}
 	};
+	//stop time
 	const stopTimer = async () => {
 		clearInterval(timerInterval);
-		clearInterval(autosaveInterval);
+		// clearInterval(autosaveInterval);
 		active = false;
 	};
 
+	// save time and reset ui
 	const split = async () => {
 		if ($task.title != '') {
 			stopTimer();
@@ -76,10 +70,10 @@
 		}
 	};
 
+	// stop the timer when the component dismounts
 	onMount(() => {
 		return () => {
 			stopTimer();
-			updateTime();
 		};
 	});
 </script>

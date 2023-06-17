@@ -15,6 +15,7 @@
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^2.0.0",
 		"@sveltejs/kit": "^1.5.0",
+		"@types/moment": "^2.13.0",
 		"autoprefixer": "^10.4.14",
 		"postcss": "^8.4.21",
 		"prettier": "^2.8.0",
@@ -35,6 +36,7 @@
 		"classnames": "^2.3.2",
 		"daisyui": "^2.51.5",
 		"felte": "^1.2.7",
+		"moment": "^2.29.4",
 		"zod": "^3.21.4"
 	}
 }

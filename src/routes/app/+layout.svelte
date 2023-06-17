@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Navbar from '$lib/components/Navbar.svelte';
-	import { openDrawer } from '$lib/stores';
+	import { openDrawer, task } from '$lib/stores';
+	import { onMount } from 'svelte';
 	import { MenuIcon } from 'svelte-feather-icons';
 
 	// variables
@@ -8,6 +9,13 @@
 		{ id: 1, title: 'Home', href: '/app/' },
 		{ id: 2, title: 'Progress', href: '/app/progress' }
 	];
+
+	// clear ui on app dismount / reload
+	onMount(() => {
+		return () => {
+			$task = { title: '', timeInSeconds: 0 };
+		};
+	});
 </script>
 
 <div>
