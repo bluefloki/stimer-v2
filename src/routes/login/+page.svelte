@@ -12,7 +12,7 @@
 	});
 </script>
 
-<div class="px-12 pt-12 flex flex-col justify-center items-center gap-10 h-[85vh] md:h-screen">
+<div class="px-12 pt-12 flex flex-col justify-center items-center gap-10 h-screen">
 	<form method="post" class="w-full lg:w-1/3 2xl:w-1/4">
 		<div class="mb-6">
 			<label for="username" class="font-semibold lg:text-xl block mb-2">Username</label>

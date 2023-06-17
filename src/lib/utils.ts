@@ -20,6 +20,20 @@ export const formatTime = (value: number) => {
     `;
 };
 
+export const formatTimeWihoutZeroes = (value: number) => {
+	const h = Math.floor(value / 3600);
+	const m = Math.floor((value % 3600) / 60);
+	const s = Math.floor((value % 3600) % 60);
+
+	if (h !== 0)
+		return `${padWithZeroes(h)}h ${padWithZeroes(m)}m ${padWithZeroes(s)}
+    `;
+	else if (h !== 0 && m !== 0)
+		return `${padWithZeroes(m)} ${padWithZeroes(s)}
+    `;
+	else return `${padWithZeroes(s)}s`;
+};
+
 export const getTotalHours = (value: number) => {
 	const h = Math.floor(value / 3600);
 

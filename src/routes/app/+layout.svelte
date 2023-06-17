@@ -36,7 +36,7 @@
 					</li>
 				{/each}
 				<li class="my-4">
-					<form action="logout" method="post">
+					<form action="/logout" method="post">
 						<button
 							class="font-semibold uppercase hover:underline hover:text-indigo-400"
 							type="submit"

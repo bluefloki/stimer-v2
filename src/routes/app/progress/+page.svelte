@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { fly } from 'svelte/transition';
 	import { onMount } from 'svelte';
 	import { completedTasks as tasks } from '$lib/stores';
 	import { Circle } from 'svelte-loading-spinners';
 	import { supabase } from '$lib/supabase';
 	import moment from 'moment';
 	import type { Task } from '$lib/types';
+	import { ArrowRightIcon } from 'svelte-feather-icons';
+	import { formatTimeWihoutZeroes } from '$lib/utils';
 
 	let dates: string[] = [];
 	let loading = true;
@@ -23,28 +24,32 @@
 	});
 </script>
 
-<main class="h-screen flex flex-col items-center justify-center">
-	<div class="mt-12">
-		{#if loading}
-			<div class="flex flex-col items-center justify-center">
-				<div>
-					<Circle size="36" color="white" unit="px" duration="0.5s" />
-				</div>
+<main>
+	{#if loading}
+		<div class="h-screen flex flex-col items-center justify-center">
+			<div>
+				<Circle size="36" color="white" unit="px" duration="0.5s" />
 			</div>
-		{:else if !loading && $tasks.length === 0}
-			<h3 class="text-2xl" in:fly={{ x: 100 }}>There are no tasks</h3>
-		{:else}
+		</div>
+	{:else if !loading && $tasks.length === 0}
+		<div class="h-screen flex flex-col items-center justify-center">
+			<h3 class="text-xl">There are no tasks</h3>
+		</div>
+	{:else}
+		<div class="h-screen flex flex-col items-start justify-start py-20 px-12 md:py-24 md:px-60">
+			<h1 class="font-semibold text-4xl md:text-5xl gradient-text py-6">Progress</h1>
 			{#each dates as d}
 				<div class="my-6">
 					<h3 class="font-bold text-2xl">{d}</h3>
 					{#each $tasks as t}
-						<div class="flex flex-row items-center gap-4 text-lg py-2">
-							<h4 class="font-semibold">{t.title}</h4>
-							<p>{t.timeInSeconds}s</p>
+						<div class="flex flex-row items-center gap-4 text-xl py-2">
+							<ArrowRightIcon size="1.3x" strokeWidth={1} class="-mr-2" />
+							<h4 class="">{t.title}</h4>
+							<p class="text-purple-300 font-medium">{formatTimeWihoutZeroes(t.timeInSeconds)}</p>
 						</div>
 					{/each}
 				</div>
 			{/each}
-		{/if}
-	</div>
+		</div>
+	{/if}
 </main>

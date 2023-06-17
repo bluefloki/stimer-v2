@@ -2,9 +2,10 @@
 	import { createForm } from 'felte';
 	import { formatTime } from '../../lib/utils';
 	import { supabase } from '$lib/supabase';
-	import { task } from '$lib/stores';
+	import { completedTasks, task } from '$lib/stores';
 	import { onMount } from 'svelte';
 	import classnames from 'classnames';
+	import type { Task } from '$lib/types';
 
 	// loading data
 	// /** @type {import('./$types').PageData} */ export let data;
@@ -30,10 +31,19 @@
 	const updateTime = async () => {
 		loading = true;
 
-		await supabase.from('tasks').insert({
-			title: $task.title,
-			timeInSeconds: $task.timeInSeconds
-		});
+		const { data: res } = await supabase
+			.from('tasks')
+			.insert({
+				title: $task.title,
+				timeInSeconds: $task.timeInSeconds
+			})
+			.select()
+			.single();
+
+		// append completed tasks list
+		if ($completedTasks.length != 0) {
+			$completedTasks = [...$completedTasks, res as Task];
+		}
 
 		// if ($task.id == undefined) $task.id = data!['id'];
 
@@ -80,7 +90,7 @@
 
 <main class="h-screen flex flex-col items-center justify-center">
 	{#if $task.title == ''}
-		<form use:form class="w-1/2 text-center">
+		<form use:form class="md:w-1/2 text-center">
 			<input
 				type="text"
 				name="title"
@@ -89,7 +99,9 @@
 			/>
 		</form>
 	{:else}
-		<h3 class="text-2xl underline w-1/2 text-center">{$task.title}</h3>
+		<h3 class="text-2xl underline px-4 md:px-0 md:w-1/2 text-center h-auto">
+			{$task.title}
+		</h3>
 	{/if}
 	<div
 		class={classnames('text-6xl font-bold pt-6 pb-16', {
