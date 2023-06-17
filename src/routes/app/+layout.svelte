@@ -19,7 +19,7 @@
 </script>
 
 <div>
-	<button on:click={() => ($openDrawer = true)} class="fixed top-8 left-12">
+	<button on:click={() => ($openDrawer = true)} class="absolute md:fixed top-8 left-12">
 		<MenuIcon size="2x" strokeWidth={1.5} />
 	</button>
 
